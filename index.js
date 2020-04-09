@@ -25,9 +25,14 @@ async function main() {
         await fs.promises.mkdir(tempDir);
       }
 
-      const dataSourceText = await fs.promises.readFile(path.resolve(dsPath), {
+      let dataSourceText = await fs.promises.readFile(path.resolve(dsPath), {
         encoding: "utf8",
       });
+
+      if (dsPath.endsWith(".csv")) {
+        dataSourceText = `[${dataSourceText.replace(/^(.+),?$/gm, '"$1",')}]`;
+        dataSourceText = dataSourceText.replace(/,\]/, "]");
+      }
 
       const dataSource = JSON.parse(dataSourceText);
 
@@ -46,26 +51,26 @@ async function main() {
         }
       }, 100);
 
-      const emails = await Promise.all(
+      const values = await Promise.all(
         dataSource.map(async (url) => {
           let res, text;
           try {
             res = await fetch(url);
             text = await res.text();
             const dom = await new JSDOM(text);
-            const email = dom.window.document.querySelector(selector)
+            const value = dom.window.document.querySelector(selector)
               .textContent;
             bar.tick();
-            return email;
+            return value;
           } catch (err) {
             console.log("\n");
-            console.error(`\nError: email not found using url: ${url}`);
+            console.error(`\nError: selector failed using url: ${url}`);
             return null;
           }
         })
       );
 
-      fs.promises.writeFile(`${tempDir}/out.json`, JSON.stringify(emails));
+      fs.promises.writeFile(`${tempDir}/out.json`, JSON.stringify(values));
     });
 
   program.parse(process.argv);
