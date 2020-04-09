@@ -1,5 +1,9 @@
 const winston = require("winston");
 
+/**
+ * Logger factory
+ * @param {String} service
+ */
 function createLogger(service = "user-service") {
   return winston.createLogger({
     level: "info",

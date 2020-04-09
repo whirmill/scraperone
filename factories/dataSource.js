@@ -1,5 +1,11 @@
 const fs = require("fs");
 const path = require("path");
+
+/**
+ * Data source factory
+ * @param {String} dataSourcePath
+ * @async
+ */
 async function createDataSource(dataSourcePath) {
   let dataSourceText = await fs.promises.readFile(
     path.resolve(dataSourcePath),
