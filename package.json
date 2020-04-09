@@ -1,0 +1,12 @@
+{
+  "name": "scraperone",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^5.0.0",
+    "isomorphic-fetch": "^2.2.1",
+    "jsdom": "^16.2.2",
+    "progress": "^2.0.3"
+  }
+}
