@@ -29,14 +29,7 @@ async function main() {
         encoding: "utf8",
       });
 
-      const fullDatasource = JSON.parse(dataSourceText);
-
-      const dataSource = [
-        fullDatasource[0],
-        fullDatasource[1],
-        fullDatasource[2],
-        fullDatasource[3],
-      ];
+      const dataSource = JSON.parse(dataSourceText);
 
       const bar = new ProgressBar("scraping [:bar] :percent :eta s*req", {
         complete: "=",
