@@ -10,4 +10,4 @@ For example: `./scraperone ./datasource.json 'a[href*="mailto:"]'`
 
 # Check result
 
-open `.tmp/out.json`
+open `.tmp/out.csv`
