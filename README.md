@@ -1,10 +1,12 @@
 # Setup
 
-Ensure that index.js has got execution permission, if not, run `chmod +x bin/scraperone`
+Ensure that index.js has got execution permission, if not, run `chmod +x ./scraperone`
 
 # Run
 
-`./bin/scraperone <datasource>` or `node index.js <datasource>`
+`./scraperone <data-source> [selector]` or `node index.js <data-source> [selector]`
+
+For example: `./scraperone ./datasource.json 'a[href*="mailto:"]'`
 
 # Check result
 

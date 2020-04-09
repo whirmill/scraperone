@@ -17,7 +17,8 @@ async function main() {
   program
     .version(appConf.version)
     .arguments("<data-source>")
-    .action(async (dsPath) => {
+    .arguments("<selector>")
+    .action(async (dsPath, selector) => {
       try {
         await fs.promises.stat(tempDir);
       } catch (err) {
@@ -59,17 +60,13 @@ async function main() {
             res = await fetch(url);
             text = await res.text();
             const dom = await new JSDOM(text);
-            const email = dom.window.document.querySelector(
-              'a[href*="mailto:"]'
-            ).textContent;
+            const email = dom.window.document.querySelector(selector)
+              .textContent;
             bar.tick();
             return email;
           } catch (err) {
             console.log("\n");
-            console.error(
-              `\nError: email not found using url: ${url}`,
-              `response body is: ${text}`
-            );
+            console.error(`\nError: email not found using url: ${url}`);
             return null;
           }
         })
