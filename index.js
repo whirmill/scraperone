@@ -4,8 +4,28 @@ const { JSDOM } = require("jsdom");
 const fetch = require("isomorphic-fetch");
 const fs = require("fs");
 const ProgressBar = require("progress");
+const winston = require("winston");
+
 const dataSourcesDir = ".dataSources";
 const tempDir = ".tmp";
+const outFile = "out.csv";
+
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.json(),
+  defaultMeta: { service: "user-service" },
+  transports: [
+    //
+    // - Write to all logs with level `info` and below to `combined.log`
+    // - Write all logs error (and below) to `error.log`.
+    //
+    new winston.transports.File({
+      filename: `${tempDir}/error.log`,
+      level: "error",
+    }),
+    new winston.transports.File({ filename: `${tempDir}/combined.log` }),
+  ],
+});
 
 async function main() {
   const appConfText = await fs.promises.readFile("package.json", {
@@ -36,41 +56,48 @@ async function main() {
 
       const dataSource = JSON.parse(dataSourceText);
 
-      const bar = new ProgressBar("scraping [:bar] :percent :eta s*req", {
+      const bar = new ProgressBar("scraping [:bar] :percent :eta ms*req", {
         complete: "=",
         incomplete: " ",
         width: 40,
         total: dataSource.length,
       });
 
-      const timer = setInterval(() => {
-        if (bar.complete) {
-          console.log("\nscraping completed successfully\n");
-          console.log("\ncheck .tmp/out.json\n");
-          clearInterval(timer);
-        }
-      }, 100);
+      fs.promises.writeFile(`${tempDir}/${outFile}`, "url, value\n");
 
-      const values = await Promise.all(
+      await Promise.all(
         dataSource.map(async (url) => {
           let res, text;
           try {
             res = await fetch(url);
+            if (!(res.status < 400)) {
+              throw new Error(
+                `Error: received http status ${res.status} using url: ${url}`
+              );
+            } else if (res.status > 400) {
+              res.status > 400;
+            }
             text = await res.text();
             const dom = await new JSDOM(text);
+            dom.window.document;
             const value = dom.window.document.querySelector(selector)
               .textContent;
-            bar.tick();
+
+            fs.promises.appendFile(
+              `${tempDir}/${outFile}`,
+              `${url},${value}\n`
+            );
+
             return value;
           } catch (err) {
-            console.log("\n");
-            console.error(`\nError: selector failed using url: ${url}`);
+            logger.error(`selector failed using url: ${url}`);
+            fs.promises.appendFile(`${tempDir}/${outFile}`, `${url},${null}\n`);
             return null;
+          } finally {
+            bar.tick();
           }
         })
       );
-
-      fs.promises.writeFile(`${tempDir}/out.json`, JSON.stringify(values));
     });
 
   program.parse(process.argv);
